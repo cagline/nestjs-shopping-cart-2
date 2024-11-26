@@ -1,26 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import {v1 as uuid} from "uuid";
+import { Repository } from 'typeorm';
+import { User } from './entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UsersService {
-  private users = [];
+  // private users = [];
+
+  constructor(@InjectRepository(User) private usersRepo: Repository<User>) {
+
+  }
 
   create(createUserDto: CreateUserDto) {
     const user = {
-      id: uuid(),
       ...createUserDto
     }
-    this.users.push(user);
+    this.usersRepo.save(user);
     return user;
   }
 
   findAll() {
-    return this.users;
+    return this.usersRepo.find();
   }
 
   findOne(id: number) {
-    return this.users.find(user=> user.id = id);
+    return this.usersRepo.findOne({
+      where: { id },
+      relations: ['ratings','ratings.product'], // Include related ratings
+    });
   }
 
 
